@@ -1,37 +1,80 @@
-#  PromptGiphy
+# PromptGiphy
 
-**PromptGiphy** is a lightweight, ultra-fast, local-first AI Meme GIF Generator. By feeding it a path to a local video file, the application automatically extracts the audio, transcribes it using blazing-fast hardware acceleration, uses an LLM to interpret comedic timing, selects a high-potential looping window, and burns a stylized meme caption directly onto a finalized `.gif` export. 
+PromptGiphy is a local tool that generates reaction GIFs for social media (such as TikTok comments) from local video files. It extracts audio from a video, transcribes the audio using Groq, determines the best 2-3 second reaction segment using Gemini, and compiles the segment into a captioned, looping GIF using FFmpeg.
 
-Built specifically for personal, zero-cost use by leveraging generous developer free-tiers.
+## Features
 
----
+- Local video processing using FFmpeg.
+- Audio transcription via Groq Whisper LPU.
+- Reaction segment selection and captioning using Gemini 2.5 Flash.
+- GIF compilation with custom color palettes and loop delay.
 
-##  How It Works (The Pipeline)
+## Architecture and Pipeline
 
-1. **Local Media Splitting:** The backend feeds your input file into local system binaries to isolate and pull the audio track without touching cloud media storage.
-2. **LPU Transcription:** The audio slice is dispatched to the **Groq Whisper** engine, handling multi-minute video transcriptions in fractions of a second.
-3. **Comedic Comprehension:** The raw text and timestamp payload are sent to **Gemini 2.5 Flash** with an injection prompt to detect high-context reaction windows and author custom punchlines.
-4. **Fidelity Compilation:** **FFmpeg** cuts the exact timestamp window, overlays classic tracking typography, isolates a balanced custom dynamic color map palette, and compiles the high-fidelity infinite loop GIF.
+1. **Audio Extraction**: Isolates the audio track of the input video file locally using FFmpeg.
+2. **Transcription**: Sends the extracted audio to Groq's Whisper API (`whisper-large-v3-turbo`) to get a text transcript.
+3. **Reaction Selection**: Sends the transcript to Gemini 2.5 Flash to identify a highly expressive 2-to-3 second segment and generate a lowercase, casual text caption.
+4. **GIF Compilation**: FFmpeg cuts the source video at the target timestamp, scales it to 400px wide, overlays the caption as a subtitle, generates an optimized color palette, and exports an infinite loop GIF.
 
----
+## Tech Stack
 
-##  The Tech Stack
+- **Framework**: Next.js (App Router)
+- **Styling**: Tailwind CSS
+- **Runtime**: Node.js
+- **Video Utilities**: FFmpeg via fluent-ffmpeg
+- **APIs**: Groq SDK and Google Gen AI SDK
 
-- **Frontend Core:** [Next.js 14+](https://nextjs.org/) (App Router)
-- **Styling Shell:** [Tailwind CSS](https://tailwindcss.com/)
-- **Core Runtime:** [Node.js](https://nodejs.org/)
-- **Processing Engine:** System-level [FFmpeg](https://ffmpeg.org/) via `fluent-ffmpeg`
-- **Transcription Layer:** [Groq Cloud SDK](https://console.groq.com/) (`whisper-large-v3-turbo`)
-- **LLM Context Brain:** [Google Gen AI SDK](https://aistudio.google.com/) (`gemini-2.5-flash`)
+## Prerequisites
 
----
+You must have FFmpeg installed and configured on your system path.
 
-##  Prerequisites & Installation
+### Installation
 
-### 1. Install System FFmpeg
-PromptGiphy depends on globally mapped FFmpeg system paths to execute core video manipulation operations.
-
-#### **Windows (Using Chocolatey)**
-Open PowerShell as an **Administrator** and run:
+#### Windows (using Chocolatey)
 ```powershell
 choco install ffmpeg
+```
+
+#### macOS (using Homebrew)
+```bash
+brew install ffmpeg
+```
+
+#### Linux (Debian/Ubuntu)
+```bash
+sudo apt update
+sudo apt install ffmpeg
+```
+
+## Setup
+
+1. Clone the repository and navigate to the project directory:
+   ```bash
+   cd promptgiphy
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env.local` file in the root directory:
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key
+   GROQ_API_KEY=your_groq_api_key
+   ```
+
+## Running the Application
+
+Start the local development server:
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Usage
+
+1. Enter the absolute path to a local video file (e.g., `C:\Users\Name\Videos\clip.mp4` or `/Users/name/Videos/clip.mp4`) in the input field.
+2. Click **Compile Loop**.
+3. Once completed, the generated GIF will display on the page. You can download the file or copy the local link to your clipboard.
