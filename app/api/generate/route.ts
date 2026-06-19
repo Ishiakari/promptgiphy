@@ -10,7 +10,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export async function POST(request: Request) {
   try {
-    const { videoPath } = await request.json();
+    const { videoPath, customPrompt } = await request.json();
 
     // Clean up the path strings if windows adds quotes around copy-pasted files
     const cleanPath = videoPath.replace(/^"|"$/g, '');
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
 Your goal is to turn this uploaded video clip into a viral, low-context TikTok comment reaction asset. 
 Identify a highly expressive 2-to-3 second window (screaming, crying, staring, laughing, processing).
 
-Write a short, completely lowercase caption that makes this clip a perfect reaction asset to reply to unhinged social media posts.
+${customPrompt ? `CRITICAL USER STYLE INSTRUCTION: ${customPrompt}` : `Write a short, completely lowercase caption that makes this clip a perfect reaction asset to reply to unhinged social media posts.
 
 CRITICAL TIKTOK COMMENT META RULES:
 - NEVER use punctuation, capital letters, or hashtags unless it's a keyboard smash/emoji (e.g., "😭", "💀").
@@ -66,7 +66,7 @@ CRITICAL TIKTOK COMMENT META RULES:
   * "delete this immediately"
   * "me processing what i just read"
   * "alr bro be serious"
-  * "bro cannot be real right now"
+  * "bro cannot be real right now"`}
 
 Return your response strictly inside a clean JSON object format:
 {"startTime": 14.2, "caption": "your caption here"}`

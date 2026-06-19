@@ -5,6 +5,7 @@ import { Download, Link } from 'lucide-react';
 
 export default function PromptGiphy() {
   const [videoPath, setVideoPath] = useState('');
+  const [customPrompt, setCustomPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [generatedGif, setGeneratedGif] = useState<string | null>(null);
@@ -28,7 +29,7 @@ export default function PromptGiphy() {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoPath }),
+        body: JSON.stringify({ videoPath, customPrompt }),
       });
 
       const data = await response.json();
@@ -78,6 +79,19 @@ export default function PromptGiphy() {
               placeholder="/Users/you/projects/clip.mp4"
               value={videoPath}
               onChange={(e) => setVideoPath(e.target.value)}
+              className="w-full bg-transparent border border-slate-800 px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-slate-600 transition"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-[10px] uppercase tracking-widest text-slate-500">
+              ADDITIONAL INSTRUCTIONS / CAPTION STYLE
+            </label>
+            <input
+              type="text"
+              placeholder="e.g., make it sound extremely sarcastic, focus on the eye roll"
+              value={customPrompt}
+              onChange={(e) => setCustomPrompt(e.target.value)}
               className="w-full bg-transparent border border-slate-800 px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-slate-600 transition"
             />
           </div>
