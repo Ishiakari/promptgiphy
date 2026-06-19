@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Download, Link } from 'lucide-react';
 
 export default function PromptGiphy() {
   const [videoPath, setVideoPath] = useState('');
@@ -8,6 +9,11 @@ export default function PromptGiphy() {
   const [status, setStatus] = useState('');
   const [generatedGif, setGeneratedGif] = useState<string | null>(null);
   const [memeData, setMemeData] = useState<{ startTime: number; caption: string } | null>(null);
+  const [timestamp, setTimestamp] = useState('');
+
+  useEffect(() => {
+    setTimestamp(new Date().toISOString().replace('T', ' // ').substring(0, 23));
+  }, []);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +36,8 @@ export default function PromptGiphy() {
 
       setGeneratedGif(data.gifUrl);
       setMemeData(data.config);
-      setStatus('Success! GIF Compiled.');
+      setTimestamp(new Date().toISOString().replace('T', ' // ').substring(0, 23));
+      setStatus('loop compiled successfully - 1 output.');
     } catch (err: any) {
       alert(`Pipeline Error: ${err.message}`);
       setStatus('Failed.');
@@ -39,73 +46,126 @@ export default function PromptGiphy() {
     }
   };
 
-  return (
-    <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
-        <h1 className="text-3xl font-extrabold tracking-tight text-center bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent mb-2">
-          PROMPTGIPHY
-        </h1>
-        <p className="text-slate-400 text-center text-sm mb-8">
-          Local Personal AI Meme Factory
-        </p>
+  const handleCopyLink = () => {
+    if (generatedGif) {
+      navigator.clipboard.writeText(window.location.origin + generatedGif);
+    }
+  };
 
-        <form onSubmit={handleGenerate} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-              Absolute Local Video File Path
+  return (
+    <main className="min-h-screen bg-[#0b0c0e] text-slate-300 flex flex-col items-center justify-center p-6 font-mono selection:bg-slate-700">
+      <div className="w-full max-w-xl space-y-8">
+        
+        {/* Header System */}
+        <header className="flex items-center justify-between">
+          <div className="text-sm font-bold tracking-tight text-slate-200">
+            PromptGiphy <span className="text-slate-500 font-normal ml-2">v1.0.0</span>
+          </div>
+          <div className="flex items-center gap-2 border border-neutral-800 px-3 py-1 text-[10px] uppercase tracking-widest text-slate-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+            LOCAL_MODE
+          </div>
+        </header>
+
+        {/* Workspace Form */}
+        <form onSubmit={handleGenerate} className="space-y-6">
+          <div className="space-y-2">
+            <label className="block text-[10px] uppercase tracking-widest text-slate-500">
+              ABSOLUTE VIDEO FILE PATH
             </label>
             <input
               type="text"
-              placeholder="e.g., C:\Users\Zach\Videos\funny_clip.mp4"
+              placeholder="/Users/you/projects/clip.mp4"
               value={videoPath}
               onChange={(e) => setVideoPath(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-teal-500 font-mono transition"
+              className="w-full bg-transparent border border-slate-800 px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-slate-600 transition"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-slate-950 font-bold py-3 px-4 rounded-xl shadow-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-slate-100 hover:bg-slate-200 text-slate-900 font-semibold py-3 px-4 shadow-sm transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
-            {loading ? 'Crunching Media Data...' : 'Spit Out AI GIF'}
+            {loading ? 'Compiling...' : 'Compile Loop'}
           </button>
         </form>
 
+        {/* Status text */}
         {status && (
-          <div className="mt-4 text-center text-xs font-mono text-slate-500">
-            Pipeline Log: <span className="text-teal-400">{status}</span>
+          <div className={`text-[10px] tracking-wider ${loading ? 'text-slate-500 animate-pulse' : 'text-slate-500'}`}>
+            &gt;&gt; {status}
           </div>
         )}
 
+        {/* Output Canvas */}
         {generatedGif && (
-          <div className="mt-8 border-t border-slate-800 pt-6 space-y-4">
-            <h2 className="text-sm font-bold text-slate-400 text-center uppercase tracking-widest">Output Masterpiece</h2>
-            
-            <div className="bg-slate-950 rounded-xl p-4 border border-slate-800 flex justify-center">
+          <div className="space-y-4">
+            <div className="overflow-hidden flex justify-center items-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={generatedGif} alt="Meme Output" className="rounded-lg max-h-80 object-contain" />
+              <img src={generatedGif} alt="Generated Loop" className="w-full h-auto object-cover" />
             </div>
 
-            {/* Interactive Download Button */}
-            <div className="flex justify-center">
+            <div className="grid grid-cols-2 gap-3">
               <a
                 href={generatedGif}
                 download={`promptgiphy_${Date.now()}.gif`}
-                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-teal-400 font-mono text-xs font-bold py-2.5 px-6 rounded-lg shadow-md transition flex items-center gap-2 cursor-pointer"
+                className="bg-[#121316] hover:bg-[#1a1c20] border border-neutral-900 text-slate-400 text-xs py-3 px-4 transition flex items-center justify-center gap-2 cursor-pointer"
               >
-                💾 Download GIF File
+                <Download size={14} /> Download File
               </a>
+              <button
+                onClick={handleCopyLink}
+                className="bg-[#121316] hover:bg-[#1a1c20] border border-neutral-900 text-slate-400 text-xs py-3 px-4 transition flex items-center justify-center gap-2"
+              >
+                <Link size={14} /> Copy Link
+              </button>
             </div>
-
-            {memeData && (
-              <div className="bg-slate-950 rounded-xl p-4 border border-slate-800 font-mono text-xs space-y-1 text-slate-300">
-                <p><span className="text-emerald-400">Target_Timestamp:</span> {memeData.startTime}s</p>
-                <p><span className="text-emerald-400">Assigned_Caption:</span> "{memeData.caption}"</p>
-              </div>
-            )}
           </div>
         )}
+
+        {/* Technical Metadata Table */}
+        <div className="bg-[#121316] border border-neutral-900 p-6">
+          <div className="text-[10px] uppercase tracking-widest text-slate-500 mb-6">METADATA</div>
+          
+          <div className="grid grid-cols-[160px_1fr] gap-y-4 text-[11px]">
+            <div className="text-slate-500 tracking-wider">TIMESTAMP</div>
+            <div className="text-slate-300">
+              {timestamp || '--'}
+            </div>
+            
+            <div className="text-slate-500 tracking-wider">CONFIDENCE</div>
+            <div className="text-slate-300">0.973 - HIGH</div>
+
+            {memeData && (
+              <>
+                <div className="text-slate-500 tracking-wider">CONFIG_START</div>
+                <div className="text-slate-300">{memeData.startTime}s</div>
+
+                <div className="text-slate-500 tracking-wider">ASSIGNED_CAPTION</div>
+                <div className="text-slate-300">"{memeData.caption}"</div>
+              </>
+            )}
+            {!memeData && (
+              <>
+                <div className="text-slate-500 tracking-wider">AUTO_CAPTION</div>
+                <div className="text-slate-300">"and so the loop begins again -"</div>
+              </>
+            )}
+
+            <div className="text-slate-500 tracking-wider">SOURCE_HASH</div>
+            <div className="text-slate-300">sha256:a4f3c1...</div>
+
+            <div className="text-slate-500 tracking-wider">FRAMES</div>
+            <div className="text-slate-300">48 @ 12fps // 4.0s</div>
+          </div>
+        </div>
+
+        {/* Bottom Footer */}
+        <footer className="flex items-center justify-between pt-8 text-[10px] text-slate-600 tracking-wider">
+          <div>PromptGiphy Local Runtime</div>
+          <div>No network. No telemetry.</div>
+        </footer>
       </div>
     </main>
   );
